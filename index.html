@@ -14,94 +14,64 @@
 
         body {
             font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
-            /* BACKGROUND IMAGE CONFIGURATION */
-            background: 
-                linear-gradient(rgba(0, 10, 30, 0.6), rgba(0, 10, 30, 0.6)), 
-                url('https://gugimages.s3.us-east-2.amazonaws.com/wp-content/uploads/2020/09/17175042/dnd_idrfm_wall1_2560-1024x640.jpg'); /* Replace with your image */
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: var(--ice-blue);
-            overflow-x: hidden;
+            background: linear-gradient(rgba(0, 10, 30, 0.7), rgba(0, 10, 30, 0.7)), 
+                        url('https://gugimages.s3.us-east-2.amazonaws.com/wp-content/uploads/2020/09/17175042/dnd_idrfm_wall1_2560-1024x640.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--ice-blue); overflow-x: hidden;
         }
 
         /* Snowflake Animation */
         .snowflake {
-            color: #fff;
-            font-size: 1em;
-            font-family: Arial, sans-serif;
-            text-shadow: 0 0 5px #000;
-            position: fixed;
-            top: -10%;
-            z-index: 9999;
-            user-select: none;
-            cursor: default;
-            animation: snowfall linear infinite;
+            color: #fff; position: fixed; top: -10%; z-index: 9999;
+            user-select: none; animation: snowfall linear infinite;
         }
-
         @keyframes snowfall {
             0% { transform: translateY(0) rotate(0deg); }
             100% { transform: translateY(110vh) rotate(360deg); }
         }
 
         .frosted-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--magic-cyan);
-            border-radius: 12px;
-            max-width: 850px;
-            width: 100%;
-            padding: 25px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
-            z-index: 10;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--magic-cyan); border-radius: 12px;
+            max-width: 850px; width: 100%; padding: 25px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); z-index: 10;
         }
 
-        h1 {
-            font-variant: small-caps;
-            text-align: center;
-            text-shadow: 0 0 15px var(--magic-cyan);
-            margin: 0 0 15px 0;
-            letter-spacing: 3px;
-        }
-
-        .round-counter {
-            text-align: center;
-            font-size: 1.4rem;
-            color: var(--magic-cyan);
-            margin-bottom: 15px;
-        }
+        h1 { font-variant: small-caps; text-align: center; text-shadow: 0 0 15px var(--magic-cyan); margin: 0 0 15px 0; }
+        .round-counter { text-align: center; font-size: 1.4rem; color: var(--magic-cyan); margin-bottom: 15px; }
 
         .input-row {
             display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 8px;
             background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 6px; margin-bottom: 15px;
         }
 
-        input { background: rgba(255,255,255,0.9); border: none; padding: 8px; border-radius: 4px; }
+        input { background: rgba(255,255,255,0.9); border: none; padding: 8px; border-radius: 4px; font-family: inherit; }
 
         .btn-roll { 
             width: 100%; background: linear-gradient(to bottom, #0ea5e9, #0284c7); 
             color: white; font-size: 1.2rem; padding: 12px; border: none;
-            border-radius: 6px; cursor: pointer; margin-bottom: 20px; font-variant: small-caps;
+            border-radius: 6px; cursor: pointer; margin-bottom: 20px; font-variant: small-caps; font-weight: bold;
         }
 
         table { width: 100%; border-collapse: collapse; }
-        th { border-bottom: 1px solid var(--magic-cyan); padding: 10px; color: var(--magic-cyan); text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        th { border-bottom: 1px solid var(--magic-cyan); padding: 10px; color: var(--magic-cyan); text-align: left; font-variant: small-caps; }
+        td { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
 
         .total-roll { font-size: 1.5rem; font-weight: bold; color: #fff; }
-        .math { font-size: 0.7rem; color: var(--magic-cyan); display: block; }
+        .math { font-size: 0.7rem; color: var(--magic-cyan); display: block; font-style: italic; }
 
         .status-pill {
             background: rgba(14, 165, 233, 0.3); border: 1px solid var(--magic-cyan);
             padding: 2px 6px; border-radius: 4px; font-size: 11px; margin: 2px; display: inline-block;
         }
+
+        .action-btns { display: flex; gap: 10px; justify-content: flex-end; }
+        .icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .icon-btn:hover { transform: scale(1.2); }
 
         .history-box {
             width: 100%; max-width: 850px; background: rgba(0,0,0,0.6);
@@ -116,10 +86,10 @@
     <div class="round-counter">❄️ Round: <span id="roundNum">0</span> ❄️</div>
     
     <div class="input-row">
-        <input type="text" id="name" placeholder="Combatant Name">
+        <input type="text" id="name" placeholder="Name">
         <input type="number" id="mod" placeholder="Bonus">
         <input type="number" id="dex" placeholder="Dex">
-        <button onclick="addParticipant()" style="background:var(--magic-cyan); color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">Add</button>
+        <button onclick="addParticipant()" style="background:var(--magic-cyan); color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">ADD</button>
     </div>
 
     <button class="btn-roll" onclick="nextRound()">🧊 Shatter the Ice (Next Round) 🧊</button>
@@ -127,10 +97,10 @@
     <table>
         <thead>
             <tr>
-                <th>Combatant</th>
-                <th>Initiative</th>
-                <th>Status</th>
-                <th></th>
+                <th style="width:30%">Combatant</th>
+                <th style="width:20%">Initiative</th>
+                <th style="width:35%">Status</th>
+                <th style="width:15%"></th>
             </tr>
         </thead>
         <tbody id="initBody"></tbody>
@@ -145,20 +115,21 @@
 <script>
     let participants = [];
     let round = 0;
+    let editingIndex = null;
     const conditions = ["Blinded", "Charmed", "Deafened", "Exhausted", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
-    // Snowfall Generator
     function createSnowflake() {
         const snow = document.createElement('div');
         snow.innerHTML = "❄";
         snow.classList.add('snowflake');
         snow.style.left = Math.random() * 100 + 'vw';
         snow.style.animationDuration = Math.random() * 3 + 2 + 's';
+        snow.style.fontSize = Math.random() * 10 + 10 + 'px';
         snow.style.opacity = Math.random();
         document.body.appendChild(snow);
         setTimeout(() => { snow.remove(); }, 5000);
     }
-    setInterval(createSnowflake, 200);
+    setInterval(createSnowflake, 250);
 
     function addParticipant() {
         const n = document.getElementById('name').value;
@@ -184,8 +155,23 @@
         render();
     }
 
+    function toggleEdit(i) {
+        editingIndex = (editingIndex === i) ? null : i;
+        render();
+    }
+
+    function saveEdit(i) {
+        participants[i].name = document.getElementById(`e-name-${i}`).value;
+        participants[i].mod = parseInt(document.getElementById(`e-mod-${i}`).value) || 0;
+        participants[i].dex = parseInt(document.getElementById(`e-dex-${i}`).value) || 10;
+        editingIndex = null;
+        render();
+    }
+
     function addStatus(i, s) { 
-        if(s && !participants[i].statuses.includes(s)) participants[i].statuses.push(s); 
+        if(s && !participants[i].statuses.includes(s)) {
+            participants[i].statuses.push(s);
+        }
         render(); 
     }
 
@@ -194,21 +180,5 @@
         tbody.innerHTML = '';
         participants.forEach((p, i) => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${p.name}</strong><br><small>Dex: ${p.dex}</small></td>
-                <td><span class="total-roll">${p.current || '-'}</span><span class="math">${p.current ? `(${p.nat}+${p.mod})` : ''}</span></td>
-                <td>
-                    ${p.statuses.map((s, si) => `<span class="status-pill">${s} <span onclick="participants[${i}].statuses.splice(${si},1);render()" style="cursor:pointer;color:red">×</span></span>`).join('')}
-                    <select onchange="addStatus(${i}, this.value)" style="display:block; font-size:10px; margin-top:4px;">
-                        <option value="">+ Status</option>
-                        ${conditions.map(c => `<option value="${c}">${c}</option>`).join('')}
-                    </select>
-                </td>
-                <td><button onclick="participants.splice(${i},1);render()" style="background:none; border:none; cursor:pointer;">☠️</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-</script>
-</body>
-</html>
+            if (editingIndex === i) {
+                tr.innerHTML
