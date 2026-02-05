@@ -3,105 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D&D 2024 Initiative Tracker</title>
+    <title>D&D 2024 - Frozen Initiative</title>
     <style>
         :root {
-            --parchment: #f2e9d0;
-            --ink: #2c1810;
-            --dnd-red: #8b0000;
-            --dnd-gold: #c9ad6a;
+            --ice-blue: #e0f2fe;
+            --deep-frost: #0c4a6e;
+            --magic-cyan: #0ea5e9;
+            --snow: #f8fafc;
+            --accent-red: #ef4444; /* For blood in the snow */
         }
 
         body {
             font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
-            background-color: #1a1a1a;
-            background-image: url("https://startplaying.games/_next/image?url=https%3A%2F%2Fspg-images.s3.us-west-1.amazonaws.com%2Fd5c57bf6-015a-483e-88f4-9e86c99e90f5&w=3840&q=75");
-            color: var(--ink);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            min-height: 100vh;
+            /* Background inspired by the icy image */
+            background: linear-gradient(to bottom, #020617, #1e293b);
+            background-image: url('https://www.enworld.org/attachments/icewind-dale-full-cover-art-regular-png.126481/');
+            color: var(--ice-blue);
         }
 
-        .parchment {
-            background-color: var(--parchment);
-            background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+        /* Frosted Glass Container */
+        .frosted-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
             max-width: 850px;
             width: 100%;
             padding: 30px;
-            border: 8px double #5d4037;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 50px rgba(0,0,0,0.1);
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.2);
             margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
         }
 
-        h1 { font-variant: small-caps; color: var(--dnd-red); text-align: center; border-bottom: 2px solid var(--dnd-gold); margin: 0 0 10px 0; }
-        .round-counter { text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 20px; color: #5d4037; }
+        h1 {
+            font-variant: small-caps;
+            color: var(--snow);
+            text-align: center;
+            text-shadow: 0 0 10px var(--magic-cyan);
+            border-bottom: 1px solid var(--magic-cyan);
+            margin: 0 0 10px 0;
+            font-size: 2.2rem;
+        }
+
+        .round-counter {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--magic-cyan);
+        }
 
         .input-row {
             display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px;
-            background: rgba(0,0,0,0.05); padding: 15px; border: 1px solid var(--dnd-gold); margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;
         }
 
-        input, select { background: #fff; border: 1px solid #5d4037; padding: 8px; font-family: inherit; }
-        
-        .btn-add { background: var(--dnd-red); color: white; border: 1px solid #000; padding: 8px 15px; font-weight: bold; cursor: pointer; }
-        .btn-roll { 
-            width: 100%; background: #2c1810; color: var(--dnd-gold); 
-            font-size: 1.3rem; padding: 12px; border: 2px solid var(--dnd-gold); margin-bottom: 10px; cursor: pointer;
+        input, select { 
+            background: rgba(255, 255, 255, 0.9); border: none; padding: 10px; 
+            border-radius: 4px; font-family: inherit; font-weight: bold;
         }
+
+        .btn-add { 
+            background: var(--magic-cyan); color: white; border: none; padding: 8px 15px; 
+            font-weight: bold; cursor: pointer; border-radius: 4px; 
+        }
+
+        .btn-roll { 
+            width: 100%; background: var(--deep-frost); color: var(--ice-blue); 
+            font-size: 1.3rem; padding: 12px; border: 1px solid var(--magic-cyan); 
+            border-radius: 8px; cursor: pointer; margin-bottom: 10px;
+            box-shadow: inset 0 0 10px rgba(14, 165, 233, 0.3);
+        }
+
+        .btn-roll:hover { background: #0ea5e9; color: white; }
 
         table { width: 100%; border-collapse: collapse; }
-        th { font-variant: small-caps; border-bottom: 2px solid var(--ink); color: var(--dnd-red); padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        th { font-variant: small-caps; border-bottom: 2px solid var(--magic-cyan); color: var(--ice-blue); padding: 10px; text-align: left; }
+        td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 
-        .roll-display { text-align: center; }
-        .total-roll { font-size: 1.4rem; font-weight: bold; color: var(--dnd-red); display: block; }
-        .math-breakdown { font-size: 0.75rem; color: #666; font-style: italic; }
+        .total-roll { font-size: 1.6rem; font-weight: bold; color: var(--snow); text-shadow: 0 0 8px var(--magic-cyan); }
+        .math-breakdown { font-size: 0.75rem; color: var(--magic-cyan); display: block; }
 
         .status-pill {
-            background: var(--dnd-gold); padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px;
-            display: inline-block; border: 1px solid #5d4037; font-weight: bold;
+            background: rgba(14, 165, 233, 0.2); color: var(--snow); padding: 2px 8px; 
+            border-radius: 4px; font-size: 11px; margin: 2px; border: 1px solid var(--magic-cyan);
         }
 
-        .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; filter: grayscale(1); transition: 0.2s; }
-        .icon-btn:hover { filter: grayscale(0); transform: scale(1.1); }
-
-        /* Previous Round Log Style */
         .history-box {
-            width: 100%; max-width: 850px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--dnd-gold);
-            border-radius: 8px;
-            padding: 15px;
-            color: #d1d5db;
-            font-size: 0.9rem;
+            width: 100%; max-width: 850px; background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--deep-frost); padding: 15px; border-radius: 8px;
+            color: var(--ice-blue); font-size: 0.85rem;
         }
-        .history-title { color: var(--dnd-gold); font-variant: small-caps; font-weight: bold; border-bottom: 1px solid #5d4037; margin-bottom: 10px; display: block; }
-        #historyContent { font-family: monospace; line-height: 1.6; }
+
+        .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .icon-btn:hover { transform: scale(1.2); }
     </style>
 </head>
 <body>
 
-<div class="parchment">
-    <h1>Combat Tracker</h1>
-    <div class="round-counter">Round: <span id="roundNum">0</span></div>
+<div class="frosted-card">
+    <h1>Frozen Combat Tracker</h1>
+    <div class="round-counter">❄️ Winter Round: <span id="roundNum">0</span> ❄️</div>
     
     <div class="input-row">
         <input type="text" id="name" placeholder="Character Name">
         <input type="number" id="mod" placeholder="Bonus">
-        <input type="number" id="dex" placeholder="Dex Score">
+        <input type="number" id="dex" placeholder="Dex">
         <button class="btn-add" onclick="addParticipant()">Add to Fray</button>
     </div>
 
-    <button class="btn-roll" onclick="nextRound()">⚔️ Next Round (Reroll All) ⚔️</button>
+    <button class="btn-roll" onclick="nextRound()">🧊 SHATTER INITIATIVE (Reroll) 🧊</button>
 
     <table>
         <thead>
             <tr>
-                <th style="text-align:left">Combatant</th>
+                <th>Combatant</th>
                 <th>Initiative</th>
-                <th>Conditions</th>
-                <th>Actions</th>
+                <th>Status Effects</th>
+                <th></th>
             </tr>
         </thead>
         <tbody id="initBody"></tbody>
@@ -109,15 +136,14 @@
 </div>
 
 <div class="history-box">
-    <span class="history-title">📜 Record of the Previous Round</span>
-    <div id="historyContent">No history yet. Start the first round to begin tracking.</div>
+    <strong style="color:var(--magic-cyan)">📜 FROZEN ECHOES (Last Round):</strong>
+    <div id="historyContent" style="margin-top:5px; font-style: italic;">The blizzard is quiet... for now.</div>
 </div>
 
 <script>
     let participants = [];
     let round = 0;
     let editingIndex = null;
-    let previousRoundData = ""; 
     const conditions = ["Blinded", "Charmed", "Deafened", "Exhausted", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
     function addParticipant() {
@@ -131,97 +157,53 @@
     }
 
     function nextRound() {
-        // Before we roll new ones, save the current state to history
         if (round > 0) {
-            previousRoundData = `<strong>Round ${round} results:</strong><br>` + 
-                participants.map(p => `${p.name}: ${p.currentTotal} (${p.lastNat}+${p.mod})`).join(" | ");
-            document.getElementById('historyContent').innerHTML = previousRoundData;
-        } else {
-            document.getElementById('historyContent').innerHTML = "This is the first round.";
+            document.getElementById('historyContent').innerHTML = 
+                participants.map(p => `${p.name}: ${p.currentTotal}`).join(" | ");
         }
-
         round++;
         document.getElementById('roundNum').innerText = round;
-
         participants.forEach(p => {
             p.lastNat = Math.floor(Math.random() * 20) + 1;
             p.currentTotal = p.lastNat + p.mod;
         });
-
-        // 2024 Tie-break Rules: Total -> Dex Score
         participants.sort((a, b) => b.currentTotal - a.currentTotal || b.dex - a.dex);
         render();
     }
 
-    function toggleEdit(index) {
-        editingIndex = (editingIndex === index) ? null : index;
-        render();
-    }
+    function toggleEdit(i) { editingIndex = (editingIndex === i) ? null : i; render(); }
 
-    function saveEdit(index) {
-        participants[index].name = document.getElementById(`edit-name-${index}`).value;
-        participants[index].mod = parseInt(document.getElementById(`edit-mod-${index}`).value) || 0;
-        participants[index].dex = parseInt(document.getElementById(`edit-dex-${index}`).value) || 10;
+    function saveEdit(i) {
+        participants[i].name = document.getElementById(`e-n-${i}`).value;
+        participants[i].mod = parseInt(document.getElementById(`e-m-${i}`).value) || 0;
+        participants[i].dex = parseInt(document.getElementById(`e-d-${i}`).value) || 10;
         editingIndex = null;
         render();
     }
 
-    function addStatus(index, status) {
-        if (status && !participants[index].statuses.includes(status)) {
-            participants[index].statuses.push(status);
-        }
-        render();
+    function addStatus(i, s) { 
+        if(s && !participants[i].statuses.includes(s)) participants[i].statuses.push(s); 
+        render(); 
     }
 
-    function removeStatus(pIdx, sIdx) {
-        participants[pIdx].statuses.splice(sIdx, 1);
-        render();
-    }
-
-    function deleteParticipant(index) {
-        participants.splice(index, 1);
-        render();
-    }
+    function removeStatus(pI, sI) { participants[pI].statuses.splice(sI, 1); render(); }
 
     function render() {
         const tbody = document.getElementById('initBody');
         tbody.innerHTML = '';
-
         participants.forEach((p, i) => {
             const tr = document.createElement('tr');
             if (editingIndex === i) {
-                tr.innerHTML = `
-                    <td><input type="text" id="edit-name-${i}" value="${p.name}" style="width:100px"></td>
-                    <td class="roll-display">
-                        Mod: <input type="number" id="edit-mod-${i}" value="${p.mod}" style="width:50px"><br>
-                        Dex: <input type="number" id="edit-dex-${i}" value="${p.dex}" style="width:50px">
-                    </td>
-                    <td>(Editing...)</td>
-                    <td style="text-align:right"><button class="icon-btn" onclick="saveEdit(${i})">💾</button></td>
-                `;
+                tr.innerHTML = `<td><input id="e-n-${i}" value="${p.name}"></td><td>M:<input id="e-m-${i}" value="${p.mod}" style="width:40px"> D:<input id="e-d-${i}" value="${p.dex}" style="width:40px"></td><td>Editing...</td><td><button onclick="saveEdit(${i})">💾</button></td>`;
             } else {
-                const statusHtml = p.statuses.map((s, sIdx) => 
-                    `<span class="status-pill">${s}<span onclick="removeStatus(${i}, ${sIdx})" style="cursor:pointer;margin-left:5px;color:var(--dnd-red)">×</span></span>`
-                ).join('');
-
                 tr.innerHTML = `
                     <td><strong>${p.name}</strong><br><small>Dex: ${p.dex}</small></td>
-                    <td class="roll-display">
-                        <span class="total-roll">${p.currentTotal || '-'}</span>
-                        <span class="math-breakdown">${p.currentTotal ? `(${p.lastNat} + ${p.mod})` : ''}</span>
-                    </td>
-                    <td>
-                        ${statusHtml}
-                        <select onchange="addStatus(${i}, this.value); this.value='';" style="display:block; font-size:10px; margin-top:5px;">
-                            <option value="">+ Status</option>
-                            ${conditions.map(c => `<option value="${c}">${c}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td style="text-align:right">
-                        <button class="icon-btn" onclick="toggleEdit(${i})">✍️</button>
-                        <button class="icon-btn" onclick="deleteParticipant(${i})">☠️</button>
-                    </td>
-                `;
+                    <td><span class="total-roll">${p.currentTotal || '-'}</span><span class="math-breakdown">${p.currentTotal ? `(${p.lastNat}+${p.mod})` : ''}</span></td>
+                    <td>${p.statuses.map((s, si) => `<span class="status-pill">${s}<span onclick="removeStatus(${i},${si})" style="cursor:pointer;color:red;margin-left:5px">×</span></span>`).join('')}
+                        <select onchange="addStatus(${i}, this.value); this.value='';" style="display:block; font-size:10px; margin-top:5px; background:rgba(255,255,255,0.7)">
+                            <option value="">+ Status</option>${conditions.map(c=>`<option value="${c}">${c}</option>`).join('')}
+                        </select></td>
+                    <td><button class="icon-btn" onclick="toggleEdit(${i})">✍️</button><button class="icon-btn" onclick="participants.splice(${i},1);render()">☠️</button></td>`;
             }
             tbody.appendChild(tr);
         });
