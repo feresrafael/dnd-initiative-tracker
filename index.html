@@ -3,43 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D&D 2024 Initiative Tracker</title>
+    <title>D&D 2024 Initiative & Status Tracker</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; padding: 20px; max-width: 600px; margin: auto; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #b91c1c; border-bottom: 2px solid #b91c1c; padding-bottom: 10px; }
-        .input-group { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        input, button { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        button { cursor: pointer; background: #b91c1c; color: white; border: none; font-weight: bold; }
-        button:hover { background: #991b1b; }
-        .reroll-btn { width: 100%; font-size: 1.1rem; background: #1e40af; margin-top: 10px; }
-        .reroll-btn:hover { background: #1e3a8a; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
-        tr.active { background: #fef2f2; border-left: 4px solid #b91c1c; font-weight: bold; }
-        .delete-btn { background: none; color: #991b1b; padding: 0; font-size: 0.8rem; text-decoration: underline; }
+        :root { --primary: #b91c1c; --secondary: #1e40af; --bg: #f4f4f9; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); padding: 15px; max-width: 800px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-top: 0; }
+        
+        /* Layout */
+        .input-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        input, select, button { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-add { background: var(--primary); color: white; font-weight: bold; border: none; }
+        .btn-roll { flex-grow: 1; background: var(--secondary); color: white; font-weight: bold; border: none; }
+        
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: #666; font-size: 0.85rem; text-transform: uppercase; padding: 10px; border-bottom: 2px solid #eee; }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        tr.active { background: #fff1f2; outline: 2px solid var(--primary); border-radius: 4px; }
+
+        /* Status Badges */
+        .status-pill { background: #e5e7eb; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-right: 4px; display: inline-flex; align-items: center; border: 1px solid #ccc; }
+        .status-pill span { cursor: pointer; margin-left: 5px; font-weight: bold; color: #991b1b; }
+        .add-status-select { padding: 4px; font-size: 11px; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Initiative Tracker (2024 Rules)</h2>
+    <h2>Initiative Tracker 2024</h2>
     
-    <div class="input-group">
-        <input type="text" id="name" placeholder="Name">
-        <input type="number" id="mod" placeholder="Mod">
-        <input type="number" id="dex" placeholder="Dex">
-        <button onclick="addParticipant()">Add</button>
+    <div class="input-row">
+        <input type="text" id="name" placeholder="Name (e.g. Rogue)">
+        <input type="number" id="mod" placeholder="Init Mod">
+        <input type="number" id="dex" placeholder="Dex Score">
+        <button class="btn-add" onclick="addParticipant()">Add</button>
     </div>
 
-    <button class="reroll-btn" onclick="nextRound()">Next Round (Reroll All)</button>
+    <div class="controls">
+        <button class="btn-roll" onclick="nextRound()">Next Round (Reroll All)</button>
+        <button style="background:#6b7280; color:white; border:none; padding:10px; border-radius:6px;" onclick="clearTable()">Clear</button>
+    </div>
 
-    <table id="initTable">
+    <table>
         <thead>
             <tr>
                 <th>Name</th>
                 <th>Roll</th>
-                <th>Dex</th>
+                <th>Conditions</th>
                 <th></th>
             </tr>
         </thead>
@@ -49,32 +62,46 @@
 
 <script>
     let participants = [];
-    let currentTurn = 0;
+    const conditions = ["Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
     function addParticipant() {
-        const name = document.getElementById('name').value;
-        const mod = parseInt(document.getElementById('mod').value) || 0;
-        const dex = parseInt(document.getElementById('dex').value) || 10;
+        const nameInput = document.getElementById('name');
+        const modInput = document.getElementById('mod');
+        const dexInput = document.getElementById('dex');
 
-        if (!name) return;
+        if (!nameInput.value) return;
 
-        participants.push({ name, mod, dex, currentRoll: 0 });
-        document.getElementById('name').value = '';
+        participants.push({
+            name: nameInput.value,
+            mod: parseInt(modInput.value) || 0,
+            dex: parseInt(dexInput.value) || 10,
+            currentRoll: 0,
+            statuses: []
+        });
+
+        nameInput.value = '';
         render();
     }
 
-    function rollInitiative() {
+    function nextRound() {
         participants.forEach(p => {
             p.currentRoll = Math.floor(Math.random() * 20) + 1 + p.mod;
         });
-        
-        // D&D 2024 Tie-breaker: Initiative Roll first, then Dexterity Score
+        // 2024 Tie-break: Roll -> Dex Score
         participants.sort((a, b) => b.currentRoll - a.currentRoll || b.dex - a.dex);
+        render();
     }
 
-    function nextRound() {
-        rollInitiative();
-        currentTurn = 0;
+    function addStatus(index, status) {
+        if (!status) return;
+        if (!participants[index].statuses.includes(status)) {
+            participants[index].statuses.push(status);
+        }
+        render();
+    }
+
+    function removeStatus(pIndex, sIndex) {
+        participants[pIndex].statuses.splice(sIndex, 1);
         render();
     }
 
@@ -83,21 +110,42 @@
         render();
     }
 
+    function clearTable() {
+        if(confirm("Clear all combatants?")) {
+            participants = [];
+            render();
+        }
+    }
+
     function render() {
         const tbody = document.getElementById('initBody');
         tbody.innerHTML = '';
 
-        participants.forEach((p, index) => {
+        participants.forEach((p, pIdx) => {
             const tr = document.createElement('tr');
-            if (index === currentTurn && p.currentRoll > 0) tr.className = 'active';
             
+            // Generate Status Pills
+            const statusHtml = p.statuses.map((s, sIdx) => 
+                `<span class="status-pill">${s}<span onclick="removeStatus(${pIdx}, ${sIdx})">×</span></span>`
+            ).join('');
+
+            // Generate Dropdown for Conditions
+            let options = `<option value="">+ Add Condition</option>`;
+            conditions.forEach(c => options += `<option value="${c}">${c}</option>`);
+
             tr.innerHTML = `
-                <td>${p.name}</td>
-                <td>${p.currentRoll || '-'}</td>
-                <td>${p.dex}</td>
-                <td><button class="delete-btn" onclick="deleteParticipant(${index})">Remove</button></td>
+                <td><strong>${p.name}</strong><br><small style="color:gray">Dex: ${p.dex}</small></td>
+                <td style="font-size: 1.2rem;">${p.currentRoll || '-'}</td>
+                <td>
+                    <div id="status-container">${statusHtml}</div>
+                    <select class="add-status-select" onchange="addStatus(${pIdx}, this.value); this.value='';">
+                        ${options}
+                    </select>
+                </td>
+                <td style="text-align:right">
+                    <button style="background:none; border:none; color:red; cursor:pointer;" onclick="deleteParticipant(${pIdx})">🗑️</button>
+                </td>
             `;
-            tr.onclick = () => { currentTurn = index; render(); };
             tbody.appendChild(tr);
         });
     }
