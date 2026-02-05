@@ -3,57 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D&D 2024 Initiative & Status Tracker</title>
+    <title>D&D 2024 Initiative Tracker</title>
     <style>
-        :root { --primary: #b91c1c; --secondary: #1e40af; --bg: #f4f4f9; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); padding: 15px; max-width: 800px; margin: auto; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-top: 0; }
-        
-        /* Layout */
-        .input-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-        input, select, button { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
-        .btn-add { background: var(--primary); color: white; font-weight: bold; border: none; }
-        .btn-roll { flex-grow: 1; background: var(--secondary); color: white; font-weight: bold; border: none; }
-        
-        /* Table Styles */
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; color: #666; font-size: 0.85rem; text-transform: uppercase; padding: 10px; border-bottom: 2px solid #eee; }
-        td { padding: 12px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
-        tr.active { background: #fff1f2; outline: 2px solid var(--primary); border-radius: 4px; }
+        :root {
+            --parchment: #f2e9d0;
+            --ink: #2c1810;
+            --dnd-red: #8b0000;
+            --dnd-gold: #c9ad6a;
+            --border-style: 2px solid #5d4037;
+        }
 
-        /* Status Badges */
-        .status-pill { background: #e5e7eb; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-right: 4px; display: inline-flex; align-items: center; border: 1px solid #ccc; }
-        .status-pill span { cursor: pointer; margin-left: 5px; font-weight: bold; color: #991b1b; }
-        .add-status-select { padding: 4px; font-size: 11px; margin-top: 5px; display: block; }
+        body {
+            font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+            background-color: #1a1a1a; /* Dark background to make the parchment pop */
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+            color: var(--ink);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .parchment {
+            background-color: var(--parchment);
+            background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+            max-width: 800px;
+            width: 100%;
+            padding: 30px;
+            border: 8px double #5d4037;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 50px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        h1 {
+            font-variant: small-caps;
+            color: var(--dnd-red);
+            text-align: center;
+            border-bottom: 2px solid var(--dnd-gold);
+            margin-top: 0;
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            background: rgba(0,0,0,0.05);
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid var(--dnd-gold);
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            background: #fff;
+            border: 1px solid #5d4037;
+            padding: 8px;
+            font-family: inherit;
+        }
+
+        button {
+            font-family: "Palatino", serif;
+            font-variant: small-caps;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-add {
+            background: var(--dnd-red);
+            color: white;
+            border: 1px solid #000;
+            padding: 8px 15px;
+        }
+
+        .btn-add:hover { background: #b91c1c; }
+
+        .btn-roll {
+            width: 100%;
+            background: #2c1810;
+            color: var(--dnd-gold);
+            font-size: 1.3rem;
+            padding: 12px;
+            border: 2px solid var(--dnd-gold);
+            margin-bottom: 20px;
+        }
+
+        .btn-roll:hover { background: #3d251c; color: #fff; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            font-variant: small-caps;
+            border-bottom: 2px solid var(--ink);
+            color: var(--dnd-red);
+            font-size: 1.1rem;
+        }
+
+        td {
+            padding: 12px 5px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        tr.active {
+            background: rgba(139, 0, 0, 0.1);
+            border-left: 5px solid var(--dnd-red);
+        }
+
+        .status-pill {
+            background: var(--dnd-gold);
+            color: #2c1810;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 2px;
+            display: inline-block;
+            border: 1px solid #5d4037;
+        }
+
+        .status-pill span {
+            margin-left: 6px;
+            cursor: pointer;
+            color: var(--dnd-red);
+        }
+
+        .dex-label { font-size: 0.8rem; color: #666; font-style: italic; }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--dnd-red);
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Initiative Tracker 2024</h2>
+<div class="parchment">
+    <h1>Combat Tracker</h1>
     
     <div class="input-row">
-        <input type="text" id="name" placeholder="Name (e.g. Rogue)">
-        <input type="number" id="mod" placeholder="Init Mod">
+        <input type="text" id="name" placeholder="Character Name">
+        <input type="number" id="mod" placeholder="Bonus">
         <input type="number" id="dex" placeholder="Dex Score">
-        <button class="btn-add" onclick="addParticipant()">Add</button>
+        <button class="btn-add" onclick="addParticipant()">Add to Fray</button>
     </div>
 
-    <div class="controls">
-        <button class="btn-roll" onclick="nextRound()">Next Round (Reroll All)</button>
-        <button style="background:#6b7280; color:white; border:none; padding:10px; border-radius:6px;" onclick="clearTable()">Clear</button>
-    </div>
+    <button class="btn-roll" onclick="nextRound()">⚔️ Reroll Initiative ⚔️</button>
 
     <table>
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Roll</th>
-                <th>Conditions</th>
-                <th></th>
+                <th style="width:30%">Combatant</th>
+                <th style="width:15%">Roll</th>
+                <th style="width:45%">Conditions</th>
+                <th style="width:10%"></th>
             </tr>
         </thead>
         <tbody id="initBody"></tbody>
@@ -62,13 +170,12 @@
 
 <script>
     let participants = [];
-    const conditions = ["Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
+    const conditions = ["Blinded", "Charmed", "Deafened", "Exhausted", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
     function addParticipant() {
         const nameInput = document.getElementById('name');
         const modInput = document.getElementById('mod');
         const dexInput = document.getElementById('dex');
-
         if (!nameInput.value) return;
 
         participants.push({
@@ -87,7 +194,7 @@
         participants.forEach(p => {
             p.currentRoll = Math.floor(Math.random() * 20) + 1 + p.mod;
         });
-        // 2024 Tie-break: Roll -> Dex Score
+        // 2024 Tie-break Rules
         participants.sort((a, b) => b.currentRoll - a.currentRoll || b.dex - a.dex);
         render();
     }
@@ -100,8 +207,8 @@
         render();
     }
 
-    function removeStatus(pIndex, sIndex) {
-        participants[pIndex].statuses.splice(sIndex, 1);
+    function removeStatus(pIdx, sIdx) {
+        participants[pIdx].statuses.splice(sIdx, 1);
         render();
     }
 
@@ -110,41 +217,29 @@
         render();
     }
 
-    function clearTable() {
-        if(confirm("Clear all combatants?")) {
-            participants = [];
-            render();
-        }
-    }
-
     function render() {
         const tbody = document.getElementById('initBody');
         tbody.innerHTML = '';
 
         participants.forEach((p, pIdx) => {
             const tr = document.createElement('tr');
-            
-            // Generate Status Pills
             const statusHtml = p.statuses.map((s, sIdx) => 
                 `<span class="status-pill">${s}<span onclick="removeStatus(${pIdx}, ${sIdx})">×</span></span>`
             ).join('');
 
-            // Generate Dropdown for Conditions
             let options = `<option value="">+ Add Condition</option>`;
             conditions.forEach(c => options += `<option value="${c}">${c}</option>`);
 
             tr.innerHTML = `
-                <td><strong>${p.name}</strong><br><small style="color:gray">Dex: ${p.dex}</small></td>
-                <td style="font-size: 1.2rem;">${p.currentRoll || '-'}</td>
+                <td><strong>${p.name}</strong><br><span class="dex-label">Dex Score: ${p.dex}</span></td>
+                <td style="font-size: 1.4rem; font-weight: bold; color: var(--dnd-red)">${p.currentRoll || '-'}</td>
                 <td>
-                    <div id="status-container">${statusHtml}</div>
-                    <select class="add-status-select" onchange="addStatus(${pIdx}, this.value); this.value='';">
+                    <div>${statusHtml}</div>
+                    <select style="margin-top:5px; font-size:11px" onchange="addStatus(${pIdx}, this.value); this.value='';">
                         ${options}
                     </select>
                 </td>
-                <td style="text-align:right">
-                    <button style="background:none; border:none; color:red; cursor:pointer;" onclick="deleteParticipant(${pIdx})">🗑️</button>
-                </td>
+                <td><button class="delete-btn" onclick="deleteParticipant(${pIdx})">☠️</button></td>
             `;
             tbody.appendChild(tr);
         });
