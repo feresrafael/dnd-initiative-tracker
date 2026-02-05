@@ -66,7 +66,18 @@
         .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; filter: grayscale(1); transition: 0.2s; }
         .icon-btn:hover { filter: grayscale(0); transform: scale(1.1); }
 
-        #log { font-size: 0.85rem; color: #f2e9d0; width: 100%; max-width: 850px; opacity: 0.7; }
+        /* Previous Round Log Style */
+        .history-box {
+            width: 100%; max-width: 850px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--dnd-gold);
+            border-radius: 8px;
+            padding: 15px;
+            color: #d1d5db;
+            font-size: 0.9rem;
+        }
+        .history-title { color: var(--dnd-gold); font-variant: small-caps; font-weight: bold; border-bottom: 1px solid #5d4037; margin-bottom: 10px; display: block; }
+        #historyContent { font-family: monospace; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -77,7 +88,7 @@
     
     <div class="input-row">
         <input type="text" id="name" placeholder="Character Name">
-        <input type="number" id="mod" placeholder="Init Bonus">
+        <input type="number" id="mod" placeholder="Bonus">
         <input type="number" id="dex" placeholder="Dex Score">
         <button class="btn-add" onclick="addParticipant()">Add to Fray</button>
     </div>
@@ -97,14 +108,16 @@
     </table>
 </div>
 
-<div id="log">
-    <strong>Recent Rolls:</strong> <span id="logText">Combat has not started.</span>
+<div class="history-box">
+    <span class="history-title">📜 Record of the Previous Round</span>
+    <div id="historyContent">No history yet. Start the first round to begin tracking.</div>
 </div>
 
 <script>
     let participants = [];
     let round = 0;
     let editingIndex = null;
+    let previousRoundData = ""; 
     const conditions = ["Blinded", "Charmed", "Deafened", "Exhausted", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
     function addParticipant() {
@@ -118,20 +131,25 @@
     }
 
     function nextRound() {
+        // Before we roll new ones, save the current state to history
+        if (round > 0) {
+            previousRoundData = `<strong>Round ${round} results:</strong><br>` + 
+                participants.map(p => `${p.name}: ${p.currentTotal} (${p.lastNat}+${p.mod})`).join(" | ");
+            document.getElementById('historyContent').innerHTML = previousRoundData;
+        } else {
+            document.getElementById('historyContent').innerHTML = "This is the first round.";
+        }
+
         round++;
         document.getElementById('roundNum').innerText = round;
-        let logs = [];
 
         participants.forEach(p => {
             p.lastNat = Math.floor(Math.random() * 20) + 1;
             p.currentTotal = p.lastNat + p.mod;
-            logs.push(`${p.name}: ${p.currentTotal}`);
         });
 
-        // 2024 Tie-break Rules: Total Initiative -> Dex Score
+        // 2024 Tie-break Rules: Total -> Dex Score
         participants.sort((a, b) => b.currentTotal - a.currentTotal || b.dex - a.dex);
-        
-        document.getElementById('logText').innerText = logs.join(" | ");
         render();
     }
 
@@ -171,19 +189,15 @@
 
         participants.forEach((p, i) => {
             const tr = document.createElement('tr');
-            const isEditing = editingIndex === i;
-
-            if (isEditing) {
+            if (editingIndex === i) {
                 tr.innerHTML = `
                     <td><input type="text" id="edit-name-${i}" value="${p.name}" style="width:100px"></td>
                     <td class="roll-display">
-                        Bonus: <input type="number" id="edit-mod-${i}" value="${p.mod}" style="width:50px"><br>
+                        Mod: <input type="number" id="edit-mod-${i}" value="${p.mod}" style="width:50px"><br>
                         Dex: <input type="number" id="edit-dex-${i}" value="${p.dex}" style="width:50px">
                     </td>
                     <td>(Editing...)</td>
-                    <td style="text-align:right">
-                        <button class="icon-btn" onclick="saveEdit(${i})">💾</button>
-                    </td>
+                    <td style="text-align:right"><button class="icon-btn" onclick="saveEdit(${i})">💾</button></td>
                 `;
             } else {
                 const statusHtml = p.statuses.map((s, sIdx) => 
