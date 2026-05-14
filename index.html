@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Convergence of Faerûn! The frozen Smiling City!</title>
+    <title>2024 Initiative & HP Tracker</title>
     <style>
         :root {
             --ice-blue: #e0f2fe;
@@ -25,6 +25,7 @@
             margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
+            /* REPLACE 'YOUR_RAW_GITHUB_URL_HERE' with your actual raw link */
             background: linear-gradient(rgba(0, 10, 30, 0.7), rgba(0, 10, 30, 0.7)), 
                         url('https://raw.githubusercontent.com/feresrafael/dnd-initiative-tracker/refs/heads/main/tracker_background.jpg');
             background-size: cover; background-position: center; background-attachment: fixed;
@@ -44,7 +45,7 @@
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--magic-cyan); border-radius: 12px;
-            max-width: 1150px; width: 100%; padding: 25px;
+            max-width: 1200px; width: 100%; padding: 25px;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); z-index: 10;
         }
 
@@ -52,11 +53,11 @@
         .round-counter { text-align: center; font-size: 1.2rem; color: var(--magic-cyan); margin-bottom: 15px; font-weight: bold;}
 
         .input-row {
-            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px;
+            display: grid; grid-template-columns: 2fr 1fr 0.8fr 0.8fr 0.8fr auto; gap: 8px;
             background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 6px; margin-bottom: 15px;
         }
 
-        input, select { background: rgba(255,255,255,0.95); border: none; padding: 10px; border-radius: 4px; font-family: inherit; color: #333; }
+        input, select { background: rgba(255,255,255,0.95); border: none; padding: 10px; border-radius: 4px; font-family: inherit; color: #333; width: 100%; box-sizing: border-box; }
 
         .btn-roll { 
             width: 100%; background: linear-gradient(to bottom, #0ea5e9, #0284c7); 
@@ -123,11 +124,12 @@
         <input type="text" id="name" placeholder="Name">
         <select id="type">
             <option value="player">Player</option>
-            <option value="enemy">Enemy</option>
+            <option value="enemy" selected>Enemy</option>
             <option value="ally">Ally</option>
         </select>
-        <input type="number" id="hp" placeholder="Max HP">
-        <input type="number" id="mod" placeholder="Dex Mod">
+        <input type="number" id="hp" placeholder="HP">
+        <input type="number" id="mod" placeholder="Dex">
+        <input type="number" id="qty" placeholder="Qty" value="1" min="1">
         <button onclick="addParticipant()" style="background:var(--magic-cyan); color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">ADD</button>
     </div>
 
@@ -205,19 +207,24 @@
         const t = document.getElementById('type').value;
         const m = parseValue(document.getElementById('mod').value, 0);
         const hp = parseValue(document.getElementById('hp').value, 10);
+        const qty = parseValue(document.getElementById('qty').value, 1);
         if (!n) return;
 
-        const nat = Math.floor(Math.random()*20)+1;
-        const newP = { 
-            name: n, type: t, mod: m, maxHp: hp, curHp: hp,
-            nat: nat, statuses: [], adv: false, dis: false, 
-            exhaustion: 0, tieBreak: Math.random() 
-        };
-        newP.current = calculateTotal(newP);
-        participants.push(newP);
+        for (let i = 1; i <= qty; i++) {
+            const displayName = qty > 1 ? `${n} ${i}` : n;
+            const nat = Math.floor(Math.random() * 20) + 1;
+            const newP = { 
+                name: displayName, type: t, mod: m, maxHp: hp, curHp: hp,
+                nat: nat, statuses: [], adv: false, dis: false, 
+                exhaustion: 0, tieBreak: Math.random() 
+            };
+            newP.current = calculateTotal(newP);
+            participants.push(newP);
+        }
         
         document.getElementById('name').value = ''; 
         document.getElementById('hp').value = '';
+        document.getElementById('qty').value = '1';
         sortParticipants(); saveToStorage(); render();
     }
 
@@ -229,15 +236,11 @@
     function saveQuickEdit(i) {
         const newName = document.getElementById(`edit-name-${i}`).value;
         const newMod = parseValue(document.getElementById(`edit-mod-${i}`).value, 0);
-        
         participants[i].name = newName;
         participants[i].mod = newMod;
         participants[i].current = calculateTotal(participants[i]);
-        
         editingIndex = null;
-        sortParticipants();
-        saveToStorage();
-        render();
+        sortParticipants(); saveToStorage(); render();
     }
 
     function nextRound() {
@@ -277,20 +280,18 @@
             if (p.exhaustion >= 6 || p.curHp <= 0) tr.style.opacity = "0.4";
 
             if (editingIndex === i) {
-                // QUICK EDIT MODE
                 tr.innerHTML = `
                     <td class="type-${p.type}">
                         <input type="text" id="edit-name-${i}" class="edit-input" value="${p.name}"><br>
                         <small>Modifier: </small><input type="number" id="edit-mod-${i}" style="width:40px; padding:2px" value="${p.mod}">
                     </td>
-                    <td colspan="5" style="text-align:center; color:var(--magic-cyan); font-style:italic;">Editing Combatant Details...</td>
+                    <td colspan="5" style="text-align:center; color:var(--magic-cyan); font-style:italic;">Editing Details...</td>
                     <td>
                         <button class="icon-btn" onclick="saveQuickEdit(${i})">💾</button>
                         <button class="icon-btn" onclick="toggleEdit(null)">❌</button>
                     </td>
                 `;
             } else {
-                // NORMAL MODE
                 tr.innerHTML = `
                     <td class="type-${p.type}"><strong>${p.name}</strong><br><small style="color:rgba(255,255,255,0.5)">${p.type.toUpperCase()} (Mod: ${p.mod >= 0 ? '+' : ''}${p.mod})</small></td>
                     <td>
