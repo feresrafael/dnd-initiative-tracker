@@ -15,7 +15,6 @@
             --exhaust-red: #fca5a5;
             --hp-green: #22c55e;
             --hp-red: #ef4444;
-            /* Faction Colors */
             --player-glow: #0ea5e9;
             --enemy-glow: #ef4444;
             --ally-glow: #22c55e;
@@ -70,7 +69,6 @@
         th { border-bottom: 1px solid var(--magic-cyan); padding: 10px; color: var(--magic-cyan); text-align: left; font-variant: small-caps; font-size: 0.8rem; }
         td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
 
-        /* Faction Styles */
         .type-player { color: var(--player-glow); text-shadow: 0 0 10px rgba(14, 165, 233, 0.5); }
         .type-enemy { color: var(--enemy-glow); text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
         .type-ally { color: var(--ally-glow); text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
@@ -81,6 +79,8 @@
 
         .total-roll { font-size: 1.5rem; font-weight: bold; color: #fff; line-height: 1;}
         .math { font-size: 0.7rem; color: var(--magic-cyan); display: block; }
+        .bonus-text { color: var(--bg3-adv); }
+        .penalty-text { color: var(--bg3-dis); }
 
         .bg3-icon-container { display: flex; gap: 8px; align-items: center; }
         .chevron {
@@ -135,7 +135,7 @@
             <tr>
                 <th style="width:18%">Combatant</th>
                 <th style="width:15%">HP (Cur/Max)</th>
-                <th style="width:10%">Adv/Dis</th>
+                <th style="width:10%">Adv/Dis (+/-5)</th>
                 <th style="width:12%">Exhaustion</th>
                 <th style="width:12%">Initiative</th>
                 <th style="width:23%">Conditions</th>
@@ -176,9 +176,19 @@
         return isNaN(parsed) ? fallback : parsed;
     }
 
+    function calculateTotal(p) {
+        let total = p.nat + p.mod;
+        if (p.adv) total += 5;
+        if (p.dis) total -= 5;
+        total -= (p.exhaustion * 2);
+        return total;
+    }
+
     function sortParticipants() {
         participants.sort((a, b) => {
-            if (b.current !== a.current) return b.current - a.current;
+            const aTot = calculateTotal(a);
+            const bTot = calculateTotal(b);
+            if (bTot !== aTot) return bTot - aTot;
             if (b.mod !== a.mod) return b.mod - a.mod;
             if (!a.tieBreak) a.tieBreak = Math.random();
             if (!b.tieBreak) b.tieBreak = Math.random();
@@ -194,12 +204,13 @@
         if (!n) return;
 
         const nat = Math.floor(Math.random()*20)+1;
-        participants.push({ 
+        const newP = { 
             name: n, type: t, mod: m, maxHp: hp, curHp: hp,
-            current: nat + m, nat: nat, 
-            statuses: [], adv: false, dis: false, 
+            nat: nat, statuses: [], adv: false, dis: false, 
             exhaustion: 0, tieBreak: Math.random() 
-        });
+        };
+        newP.current = calculateTotal(newP);
+        participants.push(newP);
         
         document.getElementById('name').value = ''; 
         document.getElementById('hp').value = '';
@@ -209,11 +220,24 @@
     function nextRound() {
         round++;
         participants.forEach(p => {
-            let d1 = Math.floor(Math.random()*20)+1; let d2 = Math.floor(Math.random()*20)+1;
-            p.nat = p.adv ? Math.max(d1, d2) : (p.dis ? Math.min(d1, d2) : d1);
-            p.current = p.nat + p.mod - (p.exhaustion * 2);
+            p.nat = Math.floor(Math.random()*20)+1;
+            p.current = calculateTotal(p);
             p.tieBreak = Math.random();
         });
+        sortParticipants(); saveToStorage(); render();
+    }
+
+    function toggleAdv(i) {
+        participants[i].adv = !participants[i].adv;
+        if (participants[i].adv) participants[i].dis = false;
+        participants[i].current = calculateTotal(participants[i]);
+        sortParticipants(); saveToStorage(); render();
+    }
+
+    function toggleDis(i) {
+        participants[i].dis = !participants[i].dis;
+        if (participants[i].dis) participants[i].adv = false;
+        participants[i].current = calculateTotal(participants[i]);
         sortParticipants(); saveToStorage(); render();
     }
 
@@ -241,18 +265,23 @@
                 </td>
                 <td>
                     <div class="bg3-icon-container">
-                        <div class="chevron adv-chevron ${p.adv ? 'active-adv' : ''}" onclick="participants[${i}].adv=!participants[${i}].adv; participants[${i}].dis=false; saveToStorage(); render();"></div>
-                        <div class="chevron dis-chevron ${p.dis ? 'active-dis' : ''}" onclick="participants[${i}].dis=!participants[${i}].dis; participants[${i}].adv=false; saveToStorage(); render();"></div>
+                        <div class="chevron adv-chevron ${p.adv ? 'active-adv' : ''}" onclick="toggleAdv(${i})"></div>
+                        <div class="chevron dis-chevron ${p.dis ? 'active-dis' : ''}" onclick="toggleDis(${i})"></div>
                     </div>
                 </td>
                 <td>
-                    <select onchange="participants[${i}].exhaustion=parseInt(this.value); participants[${i}].current=participants[${i}].nat+participants[${i}].mod-(this.value*2); sortParticipants(); saveToStorage(); render();" style="width:100%; font-size:11px;">
+                    <select onchange="participants[${i}].exhaustion=parseInt(this.value); participants[${i}].current=calculateTotal(participants[${i}]); sortParticipants(); saveToStorage(); render();" style="width:100%; font-size:11px;">
                         ${[0,1,2,3,4,5,6].map(l => `<option value="${l}" ${p.exhaustion==l?'selected':''}>Lvl ${l}</option>`).join('')}
                     </select>
                 </td>
                 <td>
                     <span class="total-roll">${p.exhaustion >= 6 || p.curHp <= 0 ? '💀' : p.current}</span>
-                    <span class="math">(${p.nat}${p.mod>=0?'+':''}${p.mod})</span>
+                    <span class="math">
+                        ${p.nat}${p.mod>=0?'+':''}${p.mod}
+                        ${p.adv ? '<span class="bonus-text">+5</span>' : ''}
+                        ${p.dis ? '<span class="penalty-text">-5</span>' : ''}
+                        ${p.exhaustion > 0 ? `<span class="penalty-text">-${p.exhaustion*2}</span>` : ''}
+                    </span>
                 </td>
                 <td>
                     <div style="max-height: 45px; overflow-y: auto;">
