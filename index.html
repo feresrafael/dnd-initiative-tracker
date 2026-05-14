@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2024 Initiative Tracker</title>
+    <title>2024 Initiative & HP Tracker</title>
     <style>
         :root {
             --ice-blue: #e0f2fe;
@@ -13,6 +13,12 @@
             --bg3-adv: #ffcc00; 
             --bg3-dis: #ff4400;
             --exhaust-red: #fca5a5;
+            --hp-green: #22c55e;
+            --hp-red: #ef4444;
+            /* Faction Colors */
+            --player-glow: #0ea5e9;
+            --enemy-glow: #ef4444;
+            --ally-glow: #22c55e;
         }
 
         body {
@@ -39,7 +45,7 @@
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--magic-cyan); border-radius: 12px;
-            max-width: 950px; width: 100%; padding: 25px;
+            max-width: 1150px; width: 100%; padding: 25px;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); z-index: 10;
         }
 
@@ -47,7 +53,7 @@
         .round-counter { text-align: center; font-size: 1.2rem; color: var(--magic-cyan); margin-bottom: 15px; font-weight: bold;}
 
         .input-row {
-            display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px;
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px;
             background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 6px; margin-bottom: 15px;
         }
 
@@ -61,53 +67,64 @@
         }
 
         table { width: 100%; border-collapse: collapse; }
-        th { border-bottom: 1px solid var(--magic-cyan); padding: 10px; color: var(--magic-cyan); text-align: left; font-variant: small-caps; font-size: 0.85rem; }
+        th { border-bottom: 1px solid var(--magic-cyan); padding: 10px; color: var(--magic-cyan); text-align: left; font-variant: small-caps; font-size: 0.8rem; }
         td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
 
-        .total-roll { font-size: 1.5rem; font-weight: bold; color: #fff; line-height: 1;}
-        .math { font-size: 0.75rem; color: var(--magic-cyan); display: block; margin-top: 4px; }
-        .exhaust-penalty { color: var(--exhaust-red); font-weight: bold; }
+        /* Faction Styles */
+        .type-player { color: var(--player-glow); text-shadow: 0 0 10px rgba(14, 165, 233, 0.5); }
+        .type-enemy { color: var(--enemy-glow); text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        .type-ally { color: var(--ally-glow); text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
 
-        .bg3-icon-container { display: flex; gap: 10px; align-items: center; }
+        .hp-input { width: 45px; text-align: center; padding: 5px; font-weight: bold; }
+        .hp-bar-bg { width: 100%; height: 6px; background: #334155; border-radius: 3px; margin-top: 5px; overflow: hidden; }
+        .hp-bar-fill { height: 100%; transition: width 0.3s ease; }
+
+        .total-roll { font-size: 1.5rem; font-weight: bold; color: #fff; line-height: 1;}
+        .math { font-size: 0.7rem; color: var(--magic-cyan); display: block; }
+
+        .bg3-icon-container { display: flex; gap: 8px; align-items: center; }
         .chevron {
-            cursor: pointer; width: 20px; height: 20px; position: relative;
+            cursor: pointer; width: 18px; height: 18px; position: relative;
             opacity: 0.2; transition: 0.3s; filter: grayscale(1);
         }
-
         .adv-chevron::before, .adv-chevron::after {
-            content: ''; position: absolute; width: 10px; height: 10px;
-            border-left: 3px solid var(--bg3-adv); border-top: 3px solid var(--bg3-adv);
-            transform: rotate(45deg); left: 5px;
+            content: ''; position: absolute; width: 8px; height: 8px;
+            border-left: 2.5px solid var(--bg3-adv); border-top: 2.5px solid var(--bg3-adv);
+            transform: rotate(45deg); left: 4px;
         }
-        .adv-chevron::after { top: 6px; }
-
+        .adv-chevron::after { top: 5px; }
         .dis-chevron::before, .dis-chevron::after {
-            content: ''; position: absolute; width: 10px; height: 10px;
-            border-right: 3px solid var(--bg3-dis); border-bottom: 3px solid var(--bg3-dis);
-            transform: rotate(45deg); left: 5px;
+            content: ''; position: absolute; width: 8px; height: 8px;
+            border-right: 2.5px solid var(--bg3-dis); border-bottom: 2.5px solid var(--bg3-dis);
+            transform: rotate(45deg); left: 4px;
         }
-        .dis-chevron::after { top: 6px; }
-
+        .dis-chevron::after { top: 5px; }
         .active-adv { opacity: 1; filter: grayscale(0) drop-shadow(0 0 5px var(--bg3-adv)); }
         .active-dis { opacity: 1; filter: grayscale(0) drop-shadow(0 0 5px var(--bg3-dis)); }
 
         .status-pill {
             background: rgba(14, 165, 233, 0.3); border: 1px solid var(--magic-cyan);
-            padding: 2px 8px; border-radius: 4px; font-size: 11px; margin: 2px; display: inline-flex; align-items: center;
+            padding: 2px 6px; border-radius: 4px; font-size: 10px; margin: 1px; display: inline-flex; align-items: center;
         }
 
-        .icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: 0.2s; padding: 5px; }
+        .icon-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 5px; opacity: 0.7; }
     </style>
 </head>
 <body>
 
 <div class="frosted-card">
-    <h1>Frozen Initiative (2024)</h1>
+    <h1>Frozen Initiative & HP</h1>
     <div class="round-counter">❄️ ROUND <span id="roundNum">0</span> ❄️</div>
     
     <div class="input-row">
         <input type="text" id="name" placeholder="Name">
-        <input type="number" id="mod" placeholder="Dex Modifier">
+        <select id="type">
+            <option value="player">Player</option>
+            <option value="enemy">Enemy</option>
+            <option value="ally">Ally</option>
+        </select>
+        <input type="number" id="hp" placeholder="Max HP">
+        <input type="number" id="mod" placeholder="Dex Mod">
         <button onclick="addParticipant()" style="background:var(--magic-cyan); color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">ADD</button>
     </div>
 
@@ -116,11 +133,12 @@
     <table>
         <thead>
             <tr>
-                <th style="width:25%">Combatant</th>
+                <th style="width:18%">Combatant</th>
+                <th style="width:15%">HP (Cur/Max)</th>
                 <th style="width:10%">Adv/Dis</th>
-                <th style="width:15%">Exhaustion</th>
-                <th style="width:15%">Initiative</th>
-                <th style="width:25%">Conditions</th>
+                <th style="width:12%">Exhaustion</th>
+                <th style="width:12%">Initiative</th>
+                <th style="width:23%">Conditions</th>
                 <th style="width:10%"></th>
             </tr>
         </thead>
@@ -133,7 +151,6 @@
 <script>
     let participants = JSON.parse(localStorage.getItem('dnd_init_data')) || [];
     let round = parseInt(localStorage.getItem('dnd_init_round')) || 0;
-    let editingIndex = null;
     const conditions = ["Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
     function saveToStorage() {
@@ -159,21 +176,10 @@
         return isNaN(parsed) ? fallback : parsed;
     }
 
-    // Logic for BG3 style Advantage/Disadvantage rolls
-    function rollD20(adv, dis) {
-        if (adv) return Math.max(Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1);
-        if (dis) return Math.min(Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1);
-        return Math.floor(Math.random()*20)+1;
-    }
-
-    // Advanced Tie-Breaker Sorting
     function sortParticipants() {
         participants.sort((a, b) => {
-            // 1. Initiative Total
             if (b.current !== a.current) return b.current - a.current;
-            // 2. Dex Modifier
             if (b.mod !== a.mod) return b.mod - a.mod;
-            // 3. Final Reroll Tie-breaker (stored internally to keep sort stable)
             if (!a.tieBreak) a.tieBreak = Math.random();
             if (!b.tieBreak) b.tieBreak = Math.random();
             return b.tieBreak - a.tieBreak;
@@ -182,74 +188,36 @@
 
     function addParticipant() {
         const n = document.getElementById('name').value;
+        const t = document.getElementById('type').value;
         const m = parseValue(document.getElementById('mod').value, 0);
+        const hp = parseValue(document.getElementById('hp').value, 10);
         if (!n) return;
 
-        const nat = rollD20(false, false);
+        const nat = Math.floor(Math.random()*20)+1;
         participants.push({ 
-            name: n, mod: m, 
+            name: n, type: t, mod: m, maxHp: hp, curHp: hp,
             current: nat + m, nat: nat, 
             statuses: [], adv: false, dis: false, 
             exhaustion: 0, tieBreak: Math.random() 
         });
         
-        document.getElementById('name').value = '';
-        sortParticipants();
-        saveToStorage();
-        render();
+        document.getElementById('name').value = ''; 
+        document.getElementById('hp').value = '';
+        sortParticipants(); saveToStorage(); render();
     }
 
     function nextRound() {
         round++;
         participants.forEach(p => {
-            p.nat = rollD20(p.adv, p.dis);
+            let d1 = Math.floor(Math.random()*20)+1; let d2 = Math.floor(Math.random()*20)+1;
+            p.nat = p.adv ? Math.max(d1, d2) : (p.dis ? Math.min(d1, d2) : d1);
             p.current = p.nat + p.mod - (p.exhaustion * 2);
-            p.tieBreak = Math.random(); // New random seed for ties this round
+            p.tieBreak = Math.random();
         });
-        sortParticipants();
-        saveToStorage();
-        render();
+        sortParticipants(); saveToStorage(); render();
     }
 
-    function updateExhaustion(i, level) {
-        participants[i].exhaustion = parseInt(level);
-        participants[i].current = participants[i].nat + participants[i].mod - (participants[i].exhaustion * 2);
-        sortParticipants();
-        saveToStorage();
-        render();
-    }
-
-    function toggleAdv(i) {
-        participants[i].adv = !participants[i].adv;
-        if (participants[i].adv) participants[i].dis = false;
-        saveToStorage();
-        render();
-    }
-
-    function toggleDis(i) {
-        participants[i].dis = !participants[i].dis;
-        if (participants[i].dis) participants[i].adv = false;
-        saveToStorage();
-        render();
-    }
-
-    function clearAll() {
-        if(confirm("Wipe all data?")) {
-            participants = []; round = 0; saveToStorage(); location.reload();
-        }
-    }
-
-    function toggleEdit(i) { editingIndex = (editingIndex === i) ? null : i; render(); }
-
-    function saveEdit(i) {
-        participants[i].name = document.getElementById(`e-name-${i}`).value;
-        participants[i].mod = parseValue(document.getElementById(`e-mod-${i}`).value, 0);
-        participants[i].current = participants[i].nat + participants[i].mod - (participants[i].exhaustion * 2);
-        sortParticipants();
-        editingIndex = null;
-        saveToStorage();
-        render();
-    }
+    function clearAll() { if(confirm("Wipe all data?")) { participants = []; round = 0; saveToStorage(); location.reload(); } }
 
     function render() {
         document.getElementById('roundNum').innerText = round;
@@ -257,43 +225,48 @@
         tbody.innerHTML = '';
         participants.forEach((p, i) => {
             const tr = document.createElement('tr');
-            if (p.exhaustion >= 6) tr.style.opacity = "0.5";
-            
-            if (editingIndex === i) {
-                tr.innerHTML = `<td colspan="3"><input id="e-name-${i}" value="${p.name}" style="width:60%"> <input type="number" id="e-mod-${i}" value="${p.mod}" style="width:50px"></td><td colspan="2">Editing...</td><td><button class="icon-btn" onclick="saveEdit(${i})">💾</button></td>`;
-            } else {
-                tr.innerHTML = `
-                    <td><strong>${p.name}</strong><br><small style="color:var(--magic-cyan)">Dex Mod: ${p.mod >= 0 ? '+' + p.mod : p.mod}</small></td>
-                    <td>
-                        <div class="bg3-icon-container">
-                            <div class="chevron adv-chevron ${p.adv ? 'active-adv' : ''}" onclick="toggleAdv(${i})"></div>
-                            <div class="chevron dis-chevron ${p.dis ? 'active-dis' : ''}" onclick="toggleDis(${i})"></div>
-                        </div>
-                    </td>
-                    <td>
-                        <select onchange="updateExhaustion(${i}, this.value)" style="width:100%; font-size:11px; ${p.exhaustion > 0 ? 'background:var(--exhaust-red)' : ''}">
-                            ${[0,1,2,3,4,5,6].map(l => `<option value="${l}" ${p.exhaustion==l?'selected':''}>Lvl ${l}${l==6?' (Dead)':''}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <span class="total-roll">${p.exhaustion >= 6 ? '💀' : p.current}</span>
-                        <span class="math">(${p.nat}${p.mod >= 0 ? '+' + p.mod : p.mod}${p.exhaustion > 0 ? `<span class="exhaust-penalty">-${p.exhaustion*2}</span>` : ''})</span>
-                    </td>
-                    <td>
-                        <div style="max-height: 50px; overflow-y: auto;">
-                            ${p.statuses.map((s, si) => `<span class="status-pill">${s} <span onclick="participants[${i}].statuses.splice(${si},1);saveToStorage();render();" style="cursor:pointer;margin-left:5px">×</span></span>`).join('')}
-                        </div>
-                        <select onchange="if(this.value){participants[${i}].statuses.push(this.value);saveToStorage();render();}" style="display:block; font-size:10px; margin-top:4px; width:100px;">
-                            <option value="">+ Status</option>
-                            ${conditions.map(c => `<option value="${c}">${c}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <button class="icon-btn" onclick="toggleEdit(${i})">✍️</button>
-                        <button class="icon-btn" onclick="participants.splice(${i},1);saveToStorage();render();">☠️</button>
-                    </td>
-                `;
-            }
+            const hpPct = Math.min(Math.max((p.curHp / p.maxHp) * 100, 0), 100);
+            const barColor = p.type === 'enemy' ? 'var(--hp-red)' : (p.type === 'player' ? 'var(--player-glow)' : 'var(--hp-green)');
+            if (p.exhaustion >= 6 || p.curHp <= 0) tr.style.opacity = "0.4";
+
+            tr.innerHTML = `
+                <td class="type-${p.type}"><strong>${p.name}</strong><br><small style="color:rgba(255,255,255,0.5)">${p.type.toUpperCase()}</small></td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <input type="number" class="hp-input" value="${p.curHp}" onchange="participants[${i}].curHp=parseInt(this.value);saveToStorage();render();">
+                        <span>/</span>
+                        <input type="number" class="hp-input" value="${p.maxHp}" onchange="participants[${i}].maxHp=parseInt(this.value);saveToStorage();render();">
+                    </div>
+                    <div class="hp-bar-bg"><div class="hp-bar-fill" style="width:${hpPct}%; background:${barColor}; box-shadow: 0 0 5px ${barColor}"></div></div>
+                </td>
+                <td>
+                    <div class="bg3-icon-container">
+                        <div class="chevron adv-chevron ${p.adv ? 'active-adv' : ''}" onclick="participants[${i}].adv=!participants[${i}].adv; participants[${i}].dis=false; saveToStorage(); render();"></div>
+                        <div class="chevron dis-chevron ${p.dis ? 'active-dis' : ''}" onclick="participants[${i}].dis=!participants[${i}].dis; participants[${i}].adv=false; saveToStorage(); render();"></div>
+                    </div>
+                </td>
+                <td>
+                    <select onchange="participants[${i}].exhaustion=parseInt(this.value); participants[${i}].current=participants[${i}].nat+participants[${i}].mod-(this.value*2); sortParticipants(); saveToStorage(); render();" style="width:100%; font-size:11px;">
+                        ${[0,1,2,3,4,5,6].map(l => `<option value="${l}" ${p.exhaustion==l?'selected':''}>Lvl ${l}</option>`).join('')}
+                    </select>
+                </td>
+                <td>
+                    <span class="total-roll">${p.exhaustion >= 6 || p.curHp <= 0 ? '💀' : p.current}</span>
+                    <span class="math">(${p.nat}${p.mod>=0?'+':''}${p.mod})</span>
+                </td>
+                <td>
+                    <div style="max-height: 45px; overflow-y: auto;">
+                        ${p.statuses.map((s, si) => `<span class="status-pill">${s} <span onclick="participants[${i}].statuses.splice(${si},1);saveToStorage();render();" style="cursor:pointer;margin-left:4px">×</span></span>`).join('')}
+                    </div>
+                    <select onchange="if(this.value){participants[${i}].statuses.push(this.value);saveToStorage();render();}" style="font-size:10px; margin-top:3px; width:100%;">
+                        <option value="">+ Status</option>
+                        ${conditions.map(c => `<option value="${c}">${c}</option>`).join('')}
+                    </select>
+                </td>
+                <td>
+                    <button class="icon-btn" onclick="participants.splice(${i},1);saveToStorage();render();">☠️</button>
+                </td>
+            `;
             tbody.appendChild(tr);
         });
     }
