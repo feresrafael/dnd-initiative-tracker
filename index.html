@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Icewind Dale: Initiative Tracker</title>
+    <title>2024 Initiative Tracker</title>
     <style>
         :root {
             --ice-blue: #e0f2fe;
@@ -11,7 +11,8 @@
             --magic-cyan: #0ea5e9;
             --snow: #f8fafc;
             --bg3-adv: #ffcc00; 
-            --bg3-dis: #ff4400; 
+            --bg3-dis: #ff4400;
+            --exhaust-red: #fca5a5;
         }
 
         body {
@@ -20,7 +21,7 @@
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
             background: linear-gradient(rgba(0, 10, 30, 0.7), rgba(0, 10, 30, 0.7)), 
-                        url('https://gugimages.s3.us-east-2.amazonaws.com/wp-content/uploads/2020/09/17175042/dnd_idrfm_wall1_2560-1024x640.jpg');
+                        url('https://wallpaperaccess.com/full/5135733.jpg');
             background-size: cover; background-position: center; background-attachment: fixed;
             color: var(--ice-blue); overflow-x: hidden;
         }
@@ -38,7 +39,7 @@
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--magic-cyan); border-radius: 12px;
-            max-width: 900px; width: 100%; padding: 25px;
+            max-width: 950px; width: 100%; padding: 25px;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); z-index: 10;
         }
 
@@ -46,11 +47,11 @@
         .round-counter { text-align: center; font-size: 1.2rem; color: var(--magic-cyan); margin-bottom: 15px; font-weight: bold;}
 
         .input-row {
-            display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 8px;
+            display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px;
             background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 6px; margin-bottom: 15px;
         }
 
-        input { background: rgba(255,255,255,0.95); border: none; padding: 10px; border-radius: 4px; font-family: inherit; color: #333; }
+        input, select { background: rgba(255,255,255,0.95); border: none; padding: 10px; border-radius: 4px; font-family: inherit; color: #333; }
 
         .btn-roll { 
             width: 100%; background: linear-gradient(to bottom, #0ea5e9, #0284c7); 
@@ -60,34 +61,35 @@
         }
 
         table { width: 100%; border-collapse: collapse; }
-        th { border-bottom: 1px solid var(--magic-cyan); padding: 10px; color: var(--magic-cyan); text-align: left; font-variant: small-caps; }
+        th { border-bottom: 1px solid var(--magic-cyan); padding: 10px; color: var(--magic-cyan); text-align: left; font-variant: small-caps; font-size: 0.85rem; }
         td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
 
         .total-roll { font-size: 1.5rem; font-weight: bold; color: #fff; line-height: 1;}
         .math { font-size: 0.75rem; color: var(--magic-cyan); display: block; margin-top: 4px; }
+        .exhaust-penalty { color: var(--exhaust-red); font-weight: bold; }
 
-        .bg3-icon-container { display: flex; gap: 12px; align-items: center; }
+        .bg3-icon-container { display: flex; gap: 10px; align-items: center; }
         .chevron {
-            cursor: pointer; width: 24px; height: 24px; position: relative;
-            opacity: 0.2; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: grayscale(1);
+            cursor: pointer; width: 20px; height: 20px; position: relative;
+            opacity: 0.2; transition: 0.3s; filter: grayscale(1);
         }
 
         .adv-chevron::before, .adv-chevron::after {
-            content: ''; position: absolute; width: 12px; height: 12px;
+            content: ''; position: absolute; width: 10px; height: 10px;
             border-left: 3px solid var(--bg3-adv); border-top: 3px solid var(--bg3-adv);
             transform: rotate(45deg); left: 5px;
         }
         .adv-chevron::after { top: 6px; }
 
         .dis-chevron::before, .dis-chevron::after {
-            content: ''; position: absolute; width: 12px; height: 12px;
+            content: ''; position: absolute; width: 10px; height: 10px;
             border-right: 3px solid var(--bg3-dis); border-bottom: 3px solid var(--bg3-dis);
             transform: rotate(45deg); left: 5px;
         }
         .dis-chevron::after { top: 6px; }
 
-        .active-adv { opacity: 1; filter: grayscale(0) drop-shadow(0 0 8px var(--bg3-adv)); transform: scale(1.2); }
-        .active-dis { opacity: 1; filter: grayscale(0) drop-shadow(0 0 8px var(--bg3-dis)); transform: scale(1.2); }
+        .active-adv { opacity: 1; filter: grayscale(0) drop-shadow(0 0 5px var(--bg3-adv)); }
+        .active-dis { opacity: 1; filter: grayscale(0) drop-shadow(0 0 5px var(--bg3-dis)); }
 
         .status-pill {
             background: rgba(14, 165, 233, 0.3); border: 1px solid var(--magic-cyan);
@@ -95,22 +97,17 @@
         }
 
         .icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: 0.2s; padding: 5px; }
-        .history-box {
-            width: 100%; max-width: 900px; background: rgba(0,0,0,0.7);
-            padding: 15px; margin-top: 20px; border-radius: 8px; border-left: 4px solid var(--magic-cyan);
-        }
     </style>
 </head>
 <body>
 
 <div class="frosted-card">
-    <h1>Rime of the Frostmaiden</h1>
+    <h1>Frozen Initiative (2024)</h1>
     <div class="round-counter">❄️ ROUND <span id="roundNum">0</span> ❄️</div>
     
     <div class="input-row">
         <input type="text" id="name" placeholder="Name">
-        <input type="number" id="mod" placeholder="Bonus">
-        <input type="number" id="dex" placeholder="Dex">
+        <input type="number" id="mod" placeholder="Dex Modifier">
         <button onclick="addParticipant()" style="background:var(--magic-cyan); color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">ADD</button>
     </div>
 
@@ -119,10 +116,11 @@
     <table>
         <thead>
             <tr>
-                <th style="width:30%">Combatant</th>
-                <th style="width:15%">Adv / Dis</th>
+                <th style="width:25%">Combatant</th>
+                <th style="width:10%">Adv/Dis</th>
+                <th style="width:15%">Exhaustion</th>
                 <th style="width:15%">Initiative</th>
-                <th style="width:30%">Conditions</th>
+                <th style="width:25%">Conditions</th>
                 <th style="width:10%"></th>
             </tr>
         </thead>
@@ -132,16 +130,11 @@
     <button onclick="clearAll()" style="background:none; border:1px solid #ef4444; color:#ef4444; font-size:10px; margin-top:20px; cursor:pointer; padding:5px; border-radius:4px;">WIPE ALL DATA</button>
 </div>
 
-<div class="history-box">
-    <small style="color:var(--magic-cyan); font-weight:bold;">📜 PREVIOUS ROUND ECHOES:</small>
-    <div id="historyContent" style="font-size: 0.85rem; margin-top:5px; opacity:0.8; font-family: monospace;">No history yet.</div>
-</div>
-
 <script>
     let participants = JSON.parse(localStorage.getItem('dnd_init_data')) || [];
     let round = parseInt(localStorage.getItem('dnd_init_round')) || 0;
     let editingIndex = null;
-    const conditions = ["Blinded", "Charmed", "Deafened", "Exhausted", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
+    const conditions = ["Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
     function saveToStorage() {
         localStorage.setItem('dnd_init_data', JSON.stringify(participants));
@@ -161,23 +154,67 @@
     }
     setInterval(createSnowflake, 300);
 
-    // Fixed the "0" default issue here
     function parseValue(val, fallback) {
         let parsed = parseInt(val);
         return isNaN(parsed) ? fallback : parsed;
     }
 
+    // Logic for BG3 style Advantage/Disadvantage rolls
+    function rollD20(adv, dis) {
+        if (adv) return Math.max(Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1);
+        if (dis) return Math.min(Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1);
+        return Math.floor(Math.random()*20)+1;
+    }
+
+    // Advanced Tie-Breaker Sorting
+    function sortParticipants() {
+        participants.sort((a, b) => {
+            // 1. Initiative Total
+            if (b.current !== a.current) return b.current - a.current;
+            // 2. Dex Modifier
+            if (b.mod !== a.mod) return b.mod - a.mod;
+            // 3. Final Reroll Tie-breaker (stored internally to keep sort stable)
+            if (!a.tieBreak) a.tieBreak = Math.random();
+            if (!b.tieBreak) b.tieBreak = Math.random();
+            return b.tieBreak - a.tieBreak;
+        });
+    }
+
     function addParticipant() {
         const n = document.getElementById('name').value;
         const m = parseValue(document.getElementById('mod').value, 0);
-        const d = parseValue(document.getElementById('dex').value, 10);
         if (!n) return;
 
-        const nat = Math.floor(Math.random() * 20) + 1;
-        participants.push({ name: n, mod: m, dex: d, current: nat + m, nat: nat, statuses: [], adv: false, dis: false });
+        const nat = rollD20(false, false);
+        participants.push({ 
+            name: n, mod: m, 
+            current: nat + m, nat: nat, 
+            statuses: [], adv: false, dis: false, 
+            exhaustion: 0, tieBreak: Math.random() 
+        });
         
         document.getElementById('name').value = '';
-        participants.sort((a, b) => b.current - a.current || b.dex - a.dex);
+        sortParticipants();
+        saveToStorage();
+        render();
+    }
+
+    function nextRound() {
+        round++;
+        participants.forEach(p => {
+            p.nat = rollD20(p.adv, p.dis);
+            p.current = p.nat + p.mod - (p.exhaustion * 2);
+            p.tieBreak = Math.random(); // New random seed for ties this round
+        });
+        sortParticipants();
+        saveToStorage();
+        render();
+    }
+
+    function updateExhaustion(i, level) {
+        participants[i].exhaustion = parseInt(level);
+        participants[i].current = participants[i].nat + participants[i].mod - (participants[i].exhaustion * 2);
+        sortParticipants();
         saveToStorage();
         render();
     }
@@ -196,22 +233,8 @@
         render();
     }
 
-    function nextRound() {
-        if (round > 0 || participants.length > 0) {
-            document.getElementById('historyContent').innerHTML = participants.map(p => `[${p.name}: ${p.current}]`).join(" ");
-        }
-        round++;
-        participants.forEach(p => {
-            p.nat = Math.floor(Math.random() * 20) + 1;
-            p.current = p.nat + p.mod;
-        });
-        participants.sort((a, b) => b.current - a.current || b.dex - a.dex);
-        saveToStorage();
-        render();
-    }
-
     function clearAll() {
-        if(confirm("Erase all combatants and reset rounds?")) {
+        if(confirm("Wipe all data?")) {
             participants = []; round = 0; saveToStorage(); location.reload();
         }
     }
@@ -221,17 +244,11 @@
     function saveEdit(i) {
         participants[i].name = document.getElementById(`e-name-${i}`).value;
         participants[i].mod = parseValue(document.getElementById(`e-mod-${i}`).value, 0);
-        participants[i].dex = parseValue(document.getElementById(`e-dex-${i}`).value, 10);
-        participants[i].current = participants[i].nat + participants[i].mod;
+        participants[i].current = participants[i].nat + participants[i].mod - (participants[i].exhaustion * 2);
+        sortParticipants();
         editingIndex = null;
         saveToStorage();
         render();
-    }
-
-    function addStatus(i, s) { 
-        if(s && !participants[i].statuses.includes(s)) participants[i].statuses.push(s);
-        saveToStorage();
-        render(); 
     }
 
     function render() {
@@ -240,28 +257,38 @@
         tbody.innerHTML = '';
         participants.forEach((p, i) => {
             const tr = document.createElement('tr');
+            if (p.exhaustion >= 6) tr.style.opacity = "0.5";
+            
             if (editingIndex === i) {
-                tr.innerHTML = `<td colspan="2"><input id="e-name-${i}" value="${p.name}" style="width:90%"></td><td>M: <input type="number" id="e-mod-${i}" value="${p.mod}" style="width:45px"><br>D: <input type="number" id="e-dex-${i}" value="${p.dex}" style="width:45px"></td><td>(Editing...)</td><td class="action-btns"><button class="icon-btn" onclick="saveEdit(${i})">💾</button></td>`;
+                tr.innerHTML = `<td colspan="3"><input id="e-name-${i}" value="${p.name}" style="width:60%"> <input type="number" id="e-mod-${i}" value="${p.mod}" style="width:50px"></td><td colspan="2">Editing...</td><td><button class="icon-btn" onclick="saveEdit(${i})">💾</button></td>`;
             } else {
                 tr.innerHTML = `
-                    <td><strong>${p.name}</strong><br><small style="color:var(--magic-cyan)">Dex: ${p.dex}</small></td>
+                    <td><strong>${p.name}</strong><br><small style="color:var(--magic-cyan)">Dex Mod: ${p.mod >= 0 ? '+' + p.mod : p.mod}</small></td>
                     <td>
                         <div class="bg3-icon-container">
-                            <div class="chevron adv-chevron ${p.adv ? 'active-adv' : ''}" onclick="toggleAdv(${i})" title="Advantage"></div>
-                            <div class="chevron dis-chevron ${p.dis ? 'active-dis' : ''}" onclick="toggleDis(${i})" title="Disadvantage"></div>
+                            <div class="chevron adv-chevron ${p.adv ? 'active-adv' : ''}" onclick="toggleAdv(${i})"></div>
+                            <div class="chevron dis-chevron ${p.dis ? 'active-dis' : ''}" onclick="toggleDis(${i})"></div>
                         </div>
                     </td>
-                    <td><span class="total-roll">${p.current || '-'}</span><span class="math">${p.current ? `(${p.nat}+${p.mod})` : ''}</span></td>
                     <td>
-                        <div style="max-height: 60px; overflow-y: auto;">
-                            ${p.statuses.map((s, si) => `<span class="status-pill">${s} <span onclick="participants[${i}].statuses.splice(${si},1);saveToStorage();render();" style="cursor:pointer;color:white;margin-left:5px">×</span></span>`).join('')}
+                        <select onchange="updateExhaustion(${i}, this.value)" style="width:100%; font-size:11px; ${p.exhaustion > 0 ? 'background:var(--exhaust-red)' : ''}">
+                            ${[0,1,2,3,4,5,6].map(l => `<option value="${l}" ${p.exhaustion==l?'selected':''}>Lvl ${l}${l==6?' (Dead)':''}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <span class="total-roll">${p.exhaustion >= 6 ? '💀' : p.current}</span>
+                        <span class="math">(${p.nat}${p.mod >= 0 ? '+' + p.mod : p.mod}${p.exhaustion > 0 ? `<span class="exhaust-penalty">-${p.exhaustion*2}</span>` : ''})</span>
+                    </td>
+                    <td>
+                        <div style="max-height: 50px; overflow-y: auto;">
+                            ${p.statuses.map((s, si) => `<span class="status-pill">${s} <span onclick="participants[${i}].statuses.splice(${si},1);saveToStorage();render();" style="cursor:pointer;margin-left:5px">×</span></span>`).join('')}
                         </div>
-                        <select onchange="addStatus(${i}, this.value); this.value='';" style="display:block; font-size:10px; margin-top:5px;">
+                        <select onchange="if(this.value){participants[${i}].statuses.push(this.value);saveToStorage();render();}" style="display:block; font-size:10px; margin-top:4px; width:100px;">
                             <option value="">+ Status</option>
                             ${conditions.map(c => `<option value="${c}">${c}</option>`).join('')}
                         </select>
                     </td>
-                    <td class="action-btns">
+                    <td>
                         <button class="icon-btn" onclick="toggleEdit(${i})">✍️</button>
                         <button class="icon-btn" onclick="participants.splice(${i},1);saveToStorage();render();">☠️</button>
                     </td>
