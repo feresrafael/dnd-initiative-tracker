@@ -25,7 +25,6 @@
             margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
-            /* REPLACE 'YOUR_RAW_GITHUB_URL_HERE' with your actual raw link */
             background: linear-gradient(rgba(0, 10, 30, 0.7), rgba(0, 10, 30, 0.7)), 
                         url('https://raw.githubusercontent.com/feresrafael/dnd-initiative-tracker/refs/heads/main/tracker_background.jpg');
             background-size: cover; background-position: center; background-attachment: fixed;
@@ -104,6 +103,15 @@
         .active-adv { opacity: 1; filter: grayscale(0) drop-shadow(0 0 5px var(--bg3-adv)); }
         .active-dis { opacity: 1; filter: grayscale(0) drop-shadow(0 0 5px var(--bg3-dis)); }
 
+        /* History Section Styles */
+        .history-container {
+            margin-top: 30px; border-top: 1px solid rgba(14, 165, 233, 0.3); padding-top: 20px;
+        }
+        .history-title { font-variant: small-caps; color: var(--magic-cyan); font-size: 1.1rem; margin-bottom: 10px; }
+        .history-log { max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px; font-size: 0.85rem; }
+        .history-item { margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+        .history-round-label { font-weight: bold; color: var(--bg3-adv); margin-right: 10px; }
+
         .status-pill {
             background: rgba(14, 165, 233, 0.3); border: 1px solid var(--magic-cyan);
             padding: 2px 6px; border-radius: 4px; font-size: 10px; margin: 1px; display: inline-flex; align-items: center;
@@ -149,6 +157,14 @@
         </thead>
         <tbody id="initBody"></tbody>
     </table>
+
+    <!-- History Section -->
+    <div class="history-container">
+        <div class="history-title">📜 Battle History</div>
+        <div id="historyLog" class="history-log">
+            <div style="opacity:0.5; font-style:italic;">No history yet. Advance to the next round to record data.</div>
+        </div>
+    </div>
     
     <button onclick="clearAll()" style="background:none; border:1px solid #ef4444; color:#ef4444; font-size:10px; margin-top:20px; cursor:pointer; padding:5px; border-radius:4px;">WIPE ALL DATA</button>
 </div>
@@ -156,12 +172,14 @@
 <script>
     let participants = JSON.parse(localStorage.getItem('dnd_init_data')) || [];
     let round = parseInt(localStorage.getItem('dnd_init_round')) || 0;
+    let history = JSON.parse(localStorage.getItem('dnd_init_history')) || [];
     let editingIndex = null;
     const conditions = ["Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
     function saveToStorage() {
         localStorage.setItem('dnd_init_data', JSON.stringify(participants));
         localStorage.setItem('dnd_init_round', round);
+        localStorage.setItem('dnd_init_history', JSON.stringify(history));
     }
 
     function createSnowflake() {
@@ -244,6 +262,15 @@
     }
 
     function nextRound() {
+        if (participants.length > 0) {
+            // Record current state to history
+            const roundRecord = {
+                roundNum: round,
+                order: participants.map(p => ({ name: p.name, score: calculateTotal(p) }))
+            };
+            history.unshift(roundRecord); // Add to start of history
+        }
+
         round++;
         participants.forEach(p => {
             p.nat = Math.floor(Math.random()*20)+1;
@@ -267,10 +294,12 @@
         sortParticipants(); saveToStorage(); render();
     }
 
-    function clearAll() { if(confirm("Wipe all data?")) { participants = []; round = 0; saveToStorage(); location.reload(); } }
+    function clearAll() { if(confirm("Wipe all data?")) { participants = []; round = 0; history = []; saveToStorage(); location.reload(); } }
 
     function render() {
         document.getElementById('roundNum').innerText = round;
+        
+        // Render Main Table
         const tbody = document.getElementById('initBody');
         tbody.innerHTML = '';
         participants.forEach((p, i) => {
@@ -339,6 +368,17 @@
             }
             tbody.appendChild(tr);
         });
+
+        // Render History Log
+        const historyLog = document.getElementById('historyLog');
+        if (history.length > 0) {
+            historyLog.innerHTML = history.map(h => `
+                <div class="history-item">
+                    <span class="history-round-label">ROUND ${h.roundNum}:</span>
+                    ${h.order.map(item => `${item.name} (${item.score})`).join(' ➔ ')}
+                </div>
+            `).join('');
+        }
     }
     render();
 </script>
