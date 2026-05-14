@@ -44,8 +44,9 @@
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--magic-cyan); border-radius: 12px;
-            max-width: 1150px; width: 100%; padding: 25px;
+            max-width: 1200px; width: 100%; padding: 25px;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); z-index: 10;
+            margin-bottom: 20px;
         }
 
         h1 { font-variant: small-caps; text-align: center; text-shadow: 0 0 15px var(--magic-cyan); margin: 0 0 10px 0; }
@@ -55,6 +56,22 @@
             display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px;
             background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 6px; margin-bottom: 15px;
         }
+
+        /* Quick Add Library Styling */
+        .library-section {
+            display: flex; gap: 10px; flex-wrap: wrap; 
+            padding: 10px; background: rgba(0,0,0,0.3); border-radius: 6px; margin-bottom: 15px;
+        }
+        .lib-chip {
+            background: rgba(14, 165, 233, 0.2); border: 1px solid var(--magic-cyan);
+            padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85rem;
+            transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .lib-chip:hover { background: var(--magic-cyan); color: white; }
+        .lib-chip.enemy-chip { border-color: var(--hp-red); color: #fca5a5; }
+        .lib-chip.enemy-chip:hover { background: var(--hp-red); color: white; }
+        .lib-del { opacity: 0.5; font-weight: bold; }
+        .lib-del:hover { color: #fff; opacity: 1; }
 
         input, select { background: rgba(255,255,255,0.95); border: none; padding: 10px; border-radius: 4px; font-family: inherit; color: #333; }
 
@@ -116,6 +133,11 @@
     <h1>Frozen Initiative & HP</h1>
     <div class="round-counter">❄️ ROUND <span id="roundNum">0</span> ❄️</div>
     
+    <!-- Quick Add Library -->
+    <div id="library" class="library-section">
+        <span style="font-size: 0.7rem; color: var(--magic-cyan); width: 100%; margin-bottom: 5px;">QUICK ADD LIBRARY (Saves Automatically):</span>
+    </div>
+
     <div class="input-row">
         <input type="text" id="name" placeholder="Name">
         <select id="type">
@@ -125,7 +147,10 @@
         </select>
         <input type="number" id="hp" placeholder="Max HP">
         <input type="number" id="mod" placeholder="Dex Mod">
-        <button onclick="addParticipant()" style="background:var(--magic-cyan); color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">ADD</button>
+        <div style="display:flex; gap: 5px;">
+            <button onclick="addParticipant()" style="background:var(--magic-cyan); color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">ADD</button>
+            <button onclick="saveToLibrary()" title="Save to Quick Add" style="background:transparent; border:1px solid var(--magic-cyan); color:var(--magic-cyan); padding:8px 10px; border-radius:4px; cursor:pointer;">⭐</button>
+        </div>
     </div>
 
     <button class="btn-roll" onclick="nextRound()">🧊 Shatter the Ice (Next Round) 🧊</button>
@@ -150,12 +175,14 @@
 
 <script>
     let participants = JSON.parse(localStorage.getItem('dnd_init_data')) || [];
+    let library = JSON.parse(localStorage.getItem('dnd_init_lib')) || [];
     let round = parseInt(localStorage.getItem('dnd_init_round')) || 0;
     const conditions = ["Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"];
 
     function saveToStorage() {
         localStorage.setItem('dnd_init_data', JSON.stringify(participants));
         localStorage.setItem('dnd_init_round', round);
+        localStorage.setItem('dnd_init_lib', JSON.stringify(library));
     }
 
     function createSnowflake() {
@@ -196,25 +223,52 @@
         });
     }
 
+    // --- Library Logic ---
+    function saveToLibrary() {
+        const n = document.getElementById('name').value;
+        const t = document.getElementById('type').value;
+        const hp = parseValue(document.getElementById('hp').value, 10);
+        const m = parseValue(document.getElementById('mod').value, 0);
+        if (!n) return;
+        library.push({ name: n, type: t, hp: hp, mod: m });
+        saveToStorage();
+        renderLibrary();
+    }
+
+    function removeFromLibrary(idx, e) {
+        e.stopPropagation();
+        library.splice(idx, 1);
+        saveToStorage();
+        renderLibrary();
+    }
+
+    function quickAdd(item) {
+        // Auto-numbering for enemies/allies with same name
+        let nameToUse = item.name;
+        const count = participants.filter(p => p.name.startsWith(item.name)).length;
+        if(count > 0 && item.type !== 'player') nameToUse = `${item.name} ${count + 1}`;
+
+        const nat = Math.floor(Math.random()*20)+1;
+        const newP = { 
+            name: nameToUse, type: item.type, mod: item.mod, maxHp: item.hp, curHp: item.hp,
+            nat: nat, statuses: [], adv: false, dis: false, 
+            exhaustion: 0, tieBreak: Math.random() 
+        };
+        newP.current = calculateTotal(newP);
+        participants.push(newP);
+        sortParticipants(); saveToStorage(); render();
+    }
+
+    // --- Combatant Logic ---
     function addParticipant() {
         const n = document.getElementById('name').value;
         const t = document.getElementById('type').value;
         const m = parseValue(document.getElementById('mod').value, 0);
         const hp = parseValue(document.getElementById('hp').value, 10);
         if (!n) return;
-
-        const nat = Math.floor(Math.random()*20)+1;
-        const newP = { 
-            name: n, type: t, mod: m, maxHp: hp, curHp: hp,
-            nat: nat, statuses: [], adv: false, dis: false, 
-            exhaustion: 0, tieBreak: Math.random() 
-        };
-        newP.current = calculateTotal(newP);
-        participants.push(newP);
-        
+        quickAdd({ name: n, type: t, hp: hp, mod: m });
         document.getElementById('name').value = ''; 
         document.getElementById('hp').value = '';
-        sortParticipants(); saveToStorage(); render();
     }
 
     function nextRound() {
@@ -242,6 +296,18 @@
     }
 
     function clearAll() { if(confirm("Wipe all data?")) { participants = []; round = 0; saveToStorage(); location.reload(); } }
+
+    function renderLibrary() {
+        const libDiv = document.getElementById('library');
+        libDiv.innerHTML = '<span style="font-size: 0.7rem; color: var(--magic-cyan); width: 100%; margin-bottom: 5px;">QUICK ADD LIBRARY (Click to add to combat):</span>';
+        library.forEach((item, i) => {
+            const chip = document.createElement('div');
+            chip.className = `lib-chip ${item.type === 'enemy' ? 'enemy-chip' : ''}`;
+            chip.innerHTML = `${item.name} <span class="lib-del" onclick="removeFromLibrary(${i}, event)">×</span>`;
+            chip.onclick = () => quickAdd(item);
+            libDiv.appendChild(chip);
+        });
+    }
 
     function render() {
         document.getElementById('roundNum').innerText = round;
@@ -280,7 +346,6 @@
                         ${p.nat}${p.mod>=0?'+':''}${p.mod}
                         ${p.adv ? '<span class="bonus-text">+5</span>' : ''}
                         ${p.dis ? '<span class="penalty-text">-5</span>' : ''}
-                        ${p.exhaustion > 0 ? `<span class="penalty-text">-${p.exhaustion*2}</span>` : ''}
                     </span>
                 </td>
                 <td>
@@ -299,6 +364,8 @@
             tbody.appendChild(tr);
         });
     }
+    
+    renderLibrary();
     render();
 </script>
 </body>
